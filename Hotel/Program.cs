@@ -7,17 +7,22 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(opt => 
+opt.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve);
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 //builder.Services.AddOpenApi();
+//builder.Services.AddEndpointsApiExplorer();
+//builder.Services();
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-//if (app.Environment.IsDevelopment())
-//{
-//    app.MapOpenApi();
-//}
+if (app.Environment.IsDevelopment())
+{
+    //app.UseSwagger();
+    //app.UseSwaggerUI() ;
+  
+}
 
 var connectionstring = builder.Configuration.GetConnectionString("HotelDbConnectionString");
 builder.Services.AddDbContext<Hotelcontext>(options => options.UseSqlServer(connectionstring));

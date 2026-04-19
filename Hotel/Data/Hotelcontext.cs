@@ -5,8 +5,8 @@ namespace Hotel.Data
 {
     public class Hotelcontext : DbContext
     {
-        public DbSet<counrty> counrties { get; set; }
-        public DbSet<HotelInfo> hotels { get; set; }
+        public DbSet<Counrty> counrties { get; set; }
+        public DbSet<Hotel> hotels { get; set; }
         public DbSet<Personel> personels{ get; set; }
 
         public Hotelcontext(DbContextOptions<Hotelcontext> options)  : base(options) 
@@ -17,7 +17,10 @@ namespace Hotel.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+            //modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+            //modelBuilder.Entity<Hotel>()
+            //    .HasOne(a => a.country)
+            //    .WithMany(p => p.Hotels);
         }
 
 

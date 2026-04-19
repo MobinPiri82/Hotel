@@ -4,9 +4,9 @@ using System.Reflection.Emit;
 
 namespace Hotel.Data.EntityConfigurations
 {
-    public class CountryEntityConfigurations : IEntityTypeConfiguration<counrty>
+    public class CountryEntityConfigurations : IEntityTypeConfiguration<Counrty>
     {
-        public void Configure(EntityTypeBuilder<counrty> builder)
+        public void Configure(EntityTypeBuilder<Counrty> builder)
         {
             builder
                 .HasMany(a => a.personels)
