@@ -3,9 +3,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Hotel.Data.EntityConfigurations
 {
-    public class HotelEntityConfiguration : IEntityTypeConfiguration<Hotel>
+    public class HotelEntityConfiguration : IEntityTypeConfiguration<HotelInfo>
     {
-        public void Configure(EntityTypeBuilder<Hotel> builder)
+        public void Configure(EntityTypeBuilder<HotelInfo> builder)
         {
             builder
                 .HasOne(a => a.country)

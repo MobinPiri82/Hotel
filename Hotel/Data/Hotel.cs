@@ -1,6 +1,6 @@
 ﻿namespace Hotel.Data
 {
-    public class Hotel
+    public class HotelInfo
     {
         public int id{ get; set; }
         public string Name{ get; set; }
