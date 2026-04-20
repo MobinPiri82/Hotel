@@ -1,7 +1,13 @@
-﻿namespace Hotel.Data
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Hotel.Data
 {
     public class Counrty
     {
+        //[Required]
+        //public int Pass{ get; set; }
+        //[Compare(nameof(Pass),ErrorMessage ="")]
+        //public int ConfirmedPass{ get; set; }
         public int CountryId{ get; set; }
         public string Name{ get; set; }
         public string Shortname{ get; set; }
