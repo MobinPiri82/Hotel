@@ -1,5 +1,7 @@
 using Hotel.Data;
 using Microsoft.EntityFrameworkCore;
+using Hotel.Services;
+using Hotel.Contract;
 //using Microsoft.EntityFrameworkCore.Tool;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -13,7 +15,7 @@ opt.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.Refe
 //builder.Services.AddOpenApi();
 //builder.Services.AddEndpointsApiExplorer();
 //builder.Services();
-
+builder.Services.AddScoped<IHotelServices, HotelServices>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

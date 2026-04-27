@@ -13,6 +13,7 @@ namespace Hotel.Data.EntityConfigurations
                 .WithOne(h => h.Nationality)
                 .HasForeignKey(d => d.CountryId)
                 .OnDelete(DeleteBehavior.Restrict);
+            
         }
     }
 }

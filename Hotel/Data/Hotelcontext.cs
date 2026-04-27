@@ -5,7 +5,7 @@ namespace Hotel.Data
 {
     public class Hotelcontext : DbContext
     {
-        public DbSet<Counrty> counrties { get; set; }
+        public DbSet<Counrty> countries { get; set; }
         public DbSet<HotelInfo> hotels { get; set; }
         public DbSet<Personel> personels{ get; set; }
 

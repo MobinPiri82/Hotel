@@ -1,4 +1,6 @@
-﻿using Hotel.Data;
+﻿using Hotel.Contract;
+using Hotel.Data;
+using Hotel.DTOs.Hotel;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
@@ -23,43 +25,65 @@ public class HotelController(Hotelcontext Context) : ControllerBase
     //{
     //    this._logger = logger;
     //}
+        //var hotel = await Context.hotels.ToListAsync();
     [HttpGet]
-    public async Task<IActionResult> Get()
+    public async Task<ActionResult<IEnumerable<GetHotelsDto>>> GetHotelsDto()
     {
-        var hotels = await Context.hotels.ToListAsync();
-        return Ok(hotels);
+        var hotels = await Context.countr
     }
+
+
+        //var hotels = await Context.hotels.ToListAsync();
+        //return Ok(hotels);
+    
     [HttpGet("{Id}")]
-    public async Task<IActionResult> Get(int Id)
+    public async Task<ActionResult<GetHotelDTO>> Get(int Id) // IActionResult : Error
     {
-        var Selectedhotel = Context.hotels.FirstOrDefaultAsync(a => a.id == Id);
-        if (Selectedhotel == null)
-        {
-            return BadRequest("Hotel Does not Exist");
-        }
-        return Ok();
+        
+
     }
 
     [HttpPost]
-    public async Task<IActionResult> Post([FromBody] HotelInfo newHotel)
+    public async Task<IActionResult> Post([FromBody] CreateHotelDTO newHotel)
     {
         var Exist = await Context.hotels.AnyAsync();
-        if (Exist == null)
+        if (!Exist)
         {
-            Context.hotels.Add(newHotel);
+            var hotel = new HotelInfo
+            {
+                Name = newHotel.Name,
+                Address = newHotel.Address,
+                Rate = newHotel.Rate,
+                CountryId = newHotel.CountryId
+
+            };
+            Context.hotels.Add(hotel);
             await Context.SaveChangesAsync();
-            return CreatedAtAction(nameof(Get), new { id = newHotel.id }, newHotel);
+            var hotelDto = new GetHotelsDto(
+        hotel.id,
+        hotel.Name,
+        hotel.Address,
+        hotel.Rate,
+        hotel.CountryId
+    );
+            return CreatedAtAction(nameof(Get), new { id = hotel.id }, hotel);
         }
         return BadRequest("Hotel already exist");
 
     }
     [HttpPut("{Id}")]
-    public async Task<IActionResult> Put(int Id, [FromBody] HotelInfo updatedHotel) 
+    public async Task<IActionResult> Put(int Id, [FromBody] UpdateHotelDTO updatedHotel) 
     {
-        if (Id != updatedHotel.id)
+        var update = await Context.hotels.FirstOrDefaultAsync(h=> h.id == Id);
+        if (update == null)
         {
-            return BadRequest();
+            return NotFound();
         }
+        update.Name = updatedHotel.Name;
+        update.Address = updatedHotel.Address;
+        update.Rate= updatedHotel.Rate;
+        update.CountryId= updatedHotel.CountryId;
+
         Context.Entry(updatedHotel).State = EntityState.Modified;
         try
         {
@@ -84,8 +108,5 @@ public class HotelController(Hotelcontext Context) : ControllerBase
         //await context.SaveChangesAsync();
         //return Ok();
     }
-    private bool hotelExistAsync(int id)
-    {
-        return Context.hotels.Any(h => h.id == id);
-    }
+    
 }

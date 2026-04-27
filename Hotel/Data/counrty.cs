@@ -9,7 +9,7 @@ namespace Hotel.Data
         //[Compare(nameof(Pass),ErrorMessage ="")]
         //public int ConfirmedPass{ get; set; }
         public int CountryId{ get; set; }
-        public string Name{ get; set; }
+        public  string Name{ get; set; }
         public string Shortname{ get; set; }
         public IList<HotelInfo> Hotels { get; set; }
         public IList<Personel> personels{ get; set; }
