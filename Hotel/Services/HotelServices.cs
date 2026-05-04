@@ -7,7 +7,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hotel.Services;
 
-public class HotelServices(Hotelcontext context) : IHotelServices
+public class HotelServices(Context context) : IHotelServices
+
 {
     public async Task<IEnumerable<GetHotelsDto>> GetHotelsDto()
     {
@@ -20,7 +21,7 @@ public class HotelServices(Hotelcontext context) : IHotelServices
             h.CountryId)).ToListAsync();
         return (hotels);
     }
-    public async Task<GetHotelDTO> GetHotelDTO(int id, Task<GetHotelDTO?> selectedHotel)
+    public async Task<GetHotelDTO> GetHotelDTO(int id)
     {
         var Selectedhotel = context.hotels.
         Include(q => q.country).
@@ -31,15 +32,15 @@ public class HotelServices(Hotelcontext context) : IHotelServices
             h.Rate,
             h.country!.Shortname)).FirstOrDefaultAsync(a => a.id == id);
         return await Selectedhotel;
-        //if (Selectedhotel == null)
-        //{
-        //    return BadRequest("Hotel Does not Exist");
-        //}
-        //else return Ok(Selectedhotel);
+        if (Selectedhotel == null)
+        {
+            throw new Exception("Not Found");
+        }
+        
     }
-    public async Task<GetHotelsDto?> Post(CreateHotelDTO newHotel)
+    public async Task<GetHotelsDto?> CreateHotelDto(CreateHotelDTO newHotel)
     {
-        var Exist = await context.hotels.AnyAsync(a=> a.Name == newHotel.Name);
+        var Exist = await context.hotels.AnyAsync(a => a.Name == newHotel.Name);
         if (!Exist)
         {
             var hotel = new HotelInfo
@@ -52,20 +53,20 @@ public class HotelServices(Hotelcontext context) : IHotelServices
             };
             context.hotels.Add(hotel);
             await context.SaveChangesAsync();
-            var hotelDto =  new GetHotelsDto(
+            var hotelDto = new GetHotelsDto(
         hotel.id,
         hotel.Name,
         hotel.Address,
         hotel.Rate,
         hotel.CountryId
     );
-            return  hotelDto;
+            return hotelDto;
             //return CreatedAtAction(nameof(Get), new { id = hotel.id }, hotel);
         }
         //return BadRequest("Hotel already exist");
-        return null ;
+        return null;
     }
-    public async Task<UpdateHotelDTO?> Put(int Id, UpdateHotelDTO updatedHotel)
+    public async Task<UpdateHotelDTO?> UpdateHotelDto(int Id, UpdateHotelDTO updatedHotel)
     {
         var update = await context.hotels.FirstOrDefaultAsync(h => h.id == Id);
         if (update == null)
@@ -77,14 +78,14 @@ public class HotelServices(Hotelcontext context) : IHotelServices
         update.Rate = updatedHotel.Rate;
         update.CountryId = updatedHotel.CountryId;
 
-        context.Entry(updatedHotel).State = EntityState.Modified;
         try
         {
             await context.SaveChangesAsync();
+            context.Entry(updatedHotel).State = EntityState.Modified;
         }
         catch (DbUpdateConcurrencyException)
         {
-            if (!hotelExistAsync(Id))
+            if (!await hotelExistAsync(Id))
                 return null;
             else throw;
         }
@@ -93,6 +94,7 @@ public class HotelServices(Hotelcontext context) : IHotelServices
     }
     public async Task DeleteHotel(int id)
     {
+        //throw new Exception("Delete Delete Delete Delete Delete");
         var delete = await context.hotels.FirstOrDefaultAsync(a => a.id == id);
         if (delete != null)
         {
@@ -100,30 +102,54 @@ public class HotelServices(Hotelcontext context) : IHotelServices
             await context.SaveChangesAsync();
         }
         else throw new KeyNotFoundException();
-
+        
     }
-    private bool hotelExistAsync(int id)
+    public async Task<bool> hotelExistAsync(int id)
     {
-        return context.hotels.Any(h => h.id == id);
+        return await context.hotels.AnyAsync(h => h.id == id);
     }
-
-    Task<GetHotelDTO> IHotelServices.GetHotelDTO(int id)
+    public async Task<bool> hotelExistAsync(string name)
     {
-        throw new NotImplementedException();
-    }
-
-    Task<IEnumerable<GetHotelsDto>> IHotelServices.GetHotelsDto()
-    {
-        throw new NotImplementedException();
+        return await context.hotels.AnyAsync(h => h.Name == name);
     }
 
-    Task<GetHotelsDto?> IHotelServices.Post(CreateHotelDTO newHotel)
-    {
-        throw new NotImplementedException();
-    }
+    //Task<GetHotelDTO> IHotelServices.GetHotelDTO(int id)
+    //{
+    //    throw new NotImplementedException();
+    //}
 
-    Task<UpdateHotelDTO> IHotelServices.Put(int Id, UpdateHotelDTO updatedHotel)
-    {
-        throw new NotImplementedException();
-    }
+    //Task<GetHotelsDto?> IHotelServices.Post(CreateHotelDTO newHotel)
+    //{
+    //    throw new NotImplementedException();
+    //}
+
+    //Task<UpdateHotelDTO> IHotelServices.Put(int Id, UpdateHotelDTO updatedHotel)
+    //{
+    //    throw new NotImplementedException();
+    //}
+
+    //public Task<GetHotelsDto?> creatho(CreateHotelDTO newHotel)
+    //{
+    //    throw new NotImplementedException();
+    //}
+
+    //Task<GetHotelDTO> IHotelServices.GetHotelDTO(int id)
+    //{
+    //    throw new NotImplementedException();
+    //}
+
+    //Task<IEnumerable<GetHotelsDto>> IHotelServices.GetHotelsDto()
+    //{
+    //    throw new NotImplementedException();
+    //}
+
+    //Task<GetHotelsDto?> IHotelServices.Post(CreateHotelDTO newHotel)
+    //{
+    //    throw new NotImplementedException();
+    //}
+
+    //Task<UpdateHotelDTO> IHotelServices.Put(int Id, UpdateHotelDTO updatedHotel)
+    //{
+    //    throw new NotImplementedException();
+    //}
 }

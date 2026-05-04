@@ -13,7 +13,7 @@ namespace Hotel;
 //[Controller]
 [Route("api/v1/Hotel")]
 [ApiController]
-public class HotelController(Hotelcontext Context) : ControllerBase
+public class HotelController(IHotelServices hotelServices) : ControllerBase
 {
 
     //public HotelController(Hotelcontext context1)
@@ -29,84 +29,36 @@ public class HotelController(Hotelcontext Context) : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<GetHotelsDto>>> GetHotelsDto()
     {
-        var hotels = await Context.countr
+        var hotels = await hotelServices.GetHotelsDto();
+        return Ok( hotels);
     }
-
-
-        //var hotels = await Context.hotels.ToListAsync();
-        //return Ok(hotels);
     
     [HttpGet("{Id}")]
-    public async Task<ActionResult<GetHotelDTO>> Get(int Id) // IActionResult : Error
+    public async Task<IActionResult> Get(int Id) 
     {
-        
+        var hotel = await hotelServices.GetHotelDTO(Id);
+        return Ok( hotel);
 
     }
 
     [HttpPost]
     public async Task<IActionResult> Post([FromBody] CreateHotelDTO newHotel)
     {
-        var Exist = await Context.hotels.AnyAsync();
-        if (!Exist)
-        {
-            var hotel = new HotelInfo
-            {
-                Name = newHotel.Name,
-                Address = newHotel.Address,
-                Rate = newHotel.Rate,
-                CountryId = newHotel.CountryId
-
-            };
-            Context.hotels.Add(hotel);
-            await Context.SaveChangesAsync();
-            var hotelDto = new GetHotelsDto(
-        hotel.id,
-        hotel.Name,
-        hotel.Address,
-        hotel.Rate,
-        hotel.CountryId
-    );
-            return CreatedAtAction(nameof(Get), new { id = hotel.id }, hotel);
-        }
-        return BadRequest("Hotel already exist");
+        var CreateHotel = await hotelServices.CreateHotelDto(newHotel);
+        return Ok(CreateHotel);
 
     }
     [HttpPut("{Id}")]
     public async Task<IActionResult> Put(int Id, [FromBody] UpdateHotelDTO updatedHotel) 
     {
-        var update = await Context.hotels.FirstOrDefaultAsync(h=> h.id == Id);
-        if (update == null)
-        {
-            return NotFound();
-        }
-        update.Name = updatedHotel.Name;
-        update.Address = updatedHotel.Address;
-        update.Rate= updatedHotel.Rate;
-        update.CountryId= updatedHotel.CountryId;
-
-        Context.Entry(updatedHotel).State = EntityState.Modified;
-        try
-        {
-            await Context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException) 
-        {
-            if (!hotelExistAsync(Id))
-                return NotFound();
-            else throw;
-        }
-        return NoContent();
-
-        //var Selectedhotel = await context.hotels.FirstOrDefaultAsync(a => a.id == Id);
-        //if (Selectedhotel == null)
-        //{
-        //    return NotFound();
-        //}
-        //Selectedhotel.Name = updatedHotel.Name;
-        //Selectedhotel.Address = updatedHotel.Address;
-        //Selectedhotel.Rate = updatedHotel.Rate;
-        //await context.SaveChangesAsync();
-        //return Ok();
+        var updatingHotel = await hotelServices.UpdateHotelDto(Id, updatedHotel);
+        return Ok( updatingHotel);
+    }
+    [HttpDelete("{Id}")]
+    public async Task<IActionResult> Delete(int Id)
+    {
+        await hotelServices.DeleteHotel(Id);
+        return Ok();
     }
     
 }

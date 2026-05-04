@@ -3,13 +3,13 @@ using System.Reflection;
 
 namespace Hotel.Data
 {
-    public class Hotelcontext : DbContext
+    public class Context : DbContext
     {
         public DbSet<Counrty> countries { get; set; }
         public DbSet<HotelInfo> hotels { get; set; }
         public DbSet<Personel> personels{ get; set; }
 
-        public Hotelcontext(DbContextOptions<Hotelcontext> options)  : base(options) 
+        public Context(DbContextOptions<Context> options)  : base(options) 
         {
             
         }

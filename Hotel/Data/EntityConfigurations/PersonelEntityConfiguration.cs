@@ -19,6 +19,11 @@ namespace Hotel.Data.EntityConfigurations
                 .HasMaxLength(50)
                 .IsRequired();
 
+            builder.HasKey(a => a.id);
+
+            builder.Property(a => a.id).
+                ValueGeneratedOnAdd().
+                UseIdentityColumn();
         }
 
     }

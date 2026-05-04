@@ -14,8 +14,14 @@ namespace Hotel.Data.EntityConfigurations
                 .OnDelete(DeleteBehavior.Cascade);
             builder
                 .Property(h => h.CountryId)
-                .IsRequired()
-                .HasMaxLength(28);
+                .IsRequired();
+                
+
+            builder.HasKey(a => a.id);
+
+            builder.Property(a => a.id).
+                ValueGeneratedOnAdd().
+                UseIdentityColumn();
         }
     }
 }

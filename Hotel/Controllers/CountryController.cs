@@ -1,4 +1,5 @@
-﻿using Hotel.Data;
+﻿using Hotel.Contract;
+using Hotel.Data;
 using Hotel.DTOs.Country;
 using Hotel.DTOs.Hotel;
 using Microsoft.AspNetCore.Mvc;
@@ -10,47 +11,46 @@ namespace Hotel.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class CountryController(Hotelcontext context) : ControllerBase
+public class CountryController(ICountryInterface countryServices) : ControllerBase
 {
     // GET: api/<CountryController>
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<GetCountriesDTO>>> GetCountriesDTO()
+    public async Task<IActionResult> GetCountries()
     {
-        var hotel = await context.countries.
-            Select(h => new GetCountriesDTO(
-                h.Name,
-                h.Shortname
-                )).ToListAsync();
-        return Ok(hotel);
+        var gethotels =await countryServices.GetCountries();
+        return Ok(gethotels);
     }
 
     // GET api/<CountryController>/5
     [HttpGet("{id}")]
-    public async Task<ActionResult<GetCountryDTO>> GetCountryDTO(int id)
+    public async Task<IActionResult> GetCountry(int id)
     {
-        var slectedHotel = await context.countries
-            .Include(a=>a.Hotels)
-            .Where(q => q.CountryId == id)
-            .Select(c => new GetCountryDTO(c.CountryId,c.Name, c.Shortname, c.Hotels.Select(x => x.Name).ToList()))
-            .ToListAsync();
-        return Ok(slectedHotel);
+        var gethotel = await countryServices.GetCountry(id);
+        return Ok(gethotel);
     }
 
     // POST api/<CountryController>
     [HttpPost]
-    public void Post([FromBody] string value)
+    public async Task<IActionResult> CreateCountry([FromBody] CreateCountryDTO newCountry)
     {
+        var createCountry = await countryServices.CreateCountry(newCountry);
+        return Ok(createCountry);
     }
 
     // PUT api/<CountryController>/5
     [HttpPut("{id}")]
-    public void Put(int id, [FromBody] string value)
+    public async Task<IActionResult> UpdateCountry(int id, [FromBody] UpdateCountryDTO updatingHotel)
     {
+        var update = await countryServices.UpdateCountry(id,updatingHotel);
+        return Ok(update);
     }
 
     // DELETE api/<CountryController>/5
     [HttpDelete("{id}")]
-    public void Delete(int id)
+    public async Task<IActionResult> DeleteCountry(int id)
     {
+        await countryServices.DeleteCountry(id);
+        return Ok();
+        
     }
 }

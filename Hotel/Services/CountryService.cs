@@ -1,5 +1,7 @@
-﻿using Hotel.Data;
+﻿using Hotel.Contract;
+using Hotel.Data;
 using Hotel.DTOs.Country;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using System.Collections;
 
@@ -8,9 +10,10 @@ using System.Collections;
 namespace Hotel.Services;
 
 
-public class CountryServices(Hotelcontext context)
+
+public class CountryServices(Context context) : ICountryInterface
 {
-    public async Task<IEnumerable<GetCountriesDTO>> GetCountries() 
+    public async Task<IEnumerable<GetCountriesDTO>> GetCountries()
     {
         var countries = await context.countries.Select(a => new GetCountriesDTO(
             a.CountryId,
@@ -21,19 +24,20 @@ public class CountryServices(Hotelcontext context)
     }
     public async Task<GetCountryDTO> GetCountry(int id)
     {
-        var country = await context.countries.Include(h=>h.Hotels).Select(q=> new GetCountryDTO(
+        var country = await context.countries.Where(c => c.CountryId == id).Select(q => new GetCountryDTO(
             q.CountryId,
             q.Name,
             q.Shortname,
-            q.Hotels.Select(z =>z.Name).ToList()))
-            .SingleOrDefaultAsync(a => a.CountryId == id);
+            q.Hotels.Select(z => z.Name).ToList()))
+            .SingleOrDefaultAsync();
         if (country == null)
             throw new KeyNotFoundException("");
         return country;
     }
+    
     public async Task<GetCountryDTO> CreateCountry(CreateCountryDTO newCountry)
     {
-        var country = await context.countries.AnyAsync(a=> a.Name==newCountry.Name);
+        var country = await context.countries.AnyAsync(a => a.Name == newCountry.Name);
 
         if (!country)
         {
@@ -55,19 +59,19 @@ public class CountryServices(Hotelcontext context)
         }
         return null;
     }
-    public async Task<CreateCountryDTO> PutCountryDTO(int id , UpdateCountry UpdatinCountry) 
+    public async Task<CreateCountryDTO> UpdateCountry(int id, UpdateCountryDTO UpdatinCountry)
     {
-        var updatedCountry = await context.countries.FirstOrDefaultAsync(a => a.CountryId ==id);
-        if (updatedCountry != null) 
+        var updatedCountry = await context.countries.FirstOrDefaultAsync(a => a.CountryId == id);
+        if (updatedCountry != null)
         {
             updatedCountry.Name = UpdatinCountry.Name;
             updatedCountry.Shortname = UpdatinCountry.Shortname;
         }
-        context.Entry(updatedCountry).State = EntityState.Modified; 
+        context.Entry(updatedCountry).State = EntityState.Modified;
         try
         {
             await context.SaveChangesAsync();
-            
+
         }
         catch (DbUpdateConcurrencyException)
         {
@@ -77,23 +81,23 @@ public class CountryServices(Hotelcontext context)
             }
             else throw;
         }
-        return new CreateCountryDTO { 
-            
+        return new CreateCountryDTO
+        {
             Name = UpdatinCountry.Name,
-            Shortname = UpdatinCountry.Shortname, 
-            
+            Shortname = UpdatinCountry.Shortname,
         };
     }
-    public async Task DeleteCountry (int id)
-        {
-            var delete = await context.countries.FirstOrDefaultAsync(a=> a.CountryId ==id);
+    public async Task DeleteCountry(int id)
+    {
+        var delete = await context.countries.FirstOrDefaultAsync(a => a.CountryId == id);
         if (delete != null)
         {
             context.countries.Remove(delete);
             await context.SaveChangesAsync();
+
         }
-        else throw new KeyNotFoundException();
-        
+        else  throw new KeyNotFoundException();
+            
     }
     private async Task<bool> CountryExistsAsync(int id)
     {

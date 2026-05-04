@@ -13,7 +13,7 @@ Content-Type: application/json
 
 ###
 
-@id=0
+@id=2
 DELETE {{Hotel_HostAddress}}/api/hotel/{{id}}
 
 ###
@@ -28,5 +28,17 @@ Content-Type: application/json
 {
   //HotelInfo
 }
+
+###
+
+DELETE {{Hotel_HostAddress}}/api/v1/Hotel?Id={{Id}}
+
+###
+
+DELETE {{Hotel_HostAddress}}/api/v1/Hotel/{{Id}}
+
+###
+
+DELETE {{Hotel_HostAddress}}/api/v1/Hotel/{{Id}}
 
 ###
