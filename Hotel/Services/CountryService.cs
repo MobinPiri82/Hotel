@@ -1,4 +1,6 @@
-﻿using Hotel.Contract;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Hotel.Contract;
 using Hotel.Data;
 using Hotel.DTOs.Country;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -11,25 +13,18 @@ namespace Hotel.Services;
 
 
 
-public class CountryServices(Context context) : ICountryInterface
+public class CountryServices(Context context, IMapper mapper) : ICountryInterface
 {
     public async Task<IEnumerable<GetCountriesDTO>> GetCountries()
     {
-        var countries = await context.countries.Select(a => new GetCountriesDTO(
-            a.CountryId,
-            a.Name,
-            a.Shortname
-            )).ToListAsync();
+        var countries = await context.countries.ProjectTo<GetCountriesDTO>(mapper.ConfigurationProvider).ToListAsync();
         return countries;
     }
     public async Task<GetCountryDTO> GetCountry(int id)
     {
-        var country = await context.countries.Where(c => c.CountryId == id).Select(q => new GetCountryDTO(
-            q.CountryId,
-            q.Name,
-            q.Shortname,
-            q.Hotels.Select(z => z.Name).ToList()))
-            .SingleOrDefaultAsync();
+        var country = await context.countries.Where(c => c.CountryId == id).Include(a=>a.Hotels).
+             ProjectTo<GetCountryDTO>(mapper.ConfigurationProvider).
+             SingleOrDefaultAsync();
         if (country == null)
             throw new KeyNotFoundException("");
         return country;
@@ -41,31 +36,21 @@ public class CountryServices(Context context) : ICountryInterface
 
         if (!country)
         {
-            var addingCountry = new Counrty
-            {
-                Name = newCountry.Name,
-                Shortname = newCountry.Shortname,
-            };
+            var addingCountry = mapper.Map<Counrty>(newCountry);
             context.countries.AddAsync(addingCountry);
             context.SaveChangesAsync();
-            var countryDto = new GetCountryDTO(
-                addingCountry.CountryId,
-                addingCountry.Name,
-                addingCountry.Shortname,
-                []
-                );
+            var countryDto = mapper.Map<GetCountryDTO>(addingCountry);
             return countryDto;
 
         }
         return null;
     }
-    public async Task<CreateCountryDTO> UpdateCountry(int id, UpdateCountryDTO UpdatinCountry)
+    public async Task<CreateCountryDTO> UpdateCountry(int id, UpdateCountryDTO UpdatingCountry)
     {
         var updatedCountry = await context.countries.FirstOrDefaultAsync(a => a.CountryId == id);
         if (updatedCountry != null)
         {
-            updatedCountry.Name = UpdatinCountry.Name;
-            updatedCountry.Shortname = UpdatinCountry.Shortname;
+            mapper.Map(UpdatingCountry,updatedCountry);           
         }
         context.Entry(updatedCountry).State = EntityState.Modified;
         try
@@ -83,12 +68,13 @@ public class CountryServices(Context context) : ICountryInterface
         }
         return new CreateCountryDTO
         {
-            Name = UpdatinCountry.Name,
-            Shortname = UpdatinCountry.Shortname,
+            Name = UpdatingCountry.Name,
+            Shortname = UpdatingCountry.Shortname,
         };
     }
     public async Task DeleteCountry(int id)
     {
+        var dddd = await context.countries.Where(a=>a.CountryId == id).ExecuteDeleteAsync();
         var delete = await context.countries.FirstOrDefaultAsync(a => a.CountryId == id);
         if (delete != null)
         {

@@ -1,4 +1,5 @@
-﻿using Hotel.Contract;
+﻿using AutoMapper;
+using Hotel.Contract;
 using Hotel.Data;
 using Hotel.DTOs.Hotel;
 using Microsoft.AspNetCore.Http;
@@ -11,7 +12,7 @@ using System.Diagnostics.Eventing.Reader;
 namespace Hotel;
 
 //[Controller]
-[Route("api/v1/Hotel")]
+[Route("api/Hotel")]
 [ApiController]
 public class HotelController(IHotelServices hotelServices) : ControllerBase
 {
@@ -26,14 +27,14 @@ public class HotelController(IHotelServices hotelServices) : ControllerBase
     //    this._logger = logger;
     //}
         //var hotel = await Context.hotels.ToListAsync();
-    [HttpGet]
+    [HttpGet("GetHotels")]
     public async Task<ActionResult<IEnumerable<GetHotelsDto>>> GetHotelsDto()
     {
         var hotels = await hotelServices.GetHotelsDto();
         return Ok( hotels);
     }
     
-    [HttpGet("{Id}")]
+    [HttpGet("getHotel{Id}")]
     public async Task<IActionResult> Get(int Id) 
     {
         var hotel = await hotelServices.GetHotelDTO(Id);
@@ -41,20 +42,20 @@ public class HotelController(IHotelServices hotelServices) : ControllerBase
 
     }
 
-    [HttpPost]
+    [HttpPost("CreateHotel")]
     public async Task<IActionResult> Post([FromBody] CreateHotelDTO newHotel)
     {
         var CreateHotel = await hotelServices.CreateHotelDto(newHotel);
         return Ok(CreateHotel);
 
     }
-    [HttpPut("{Id}")]
+    [HttpPut("UpdateHotel{Id}")]
     public async Task<IActionResult> Put(int Id, [FromBody] UpdateHotelDTO updatedHotel) 
     {
         var updatingHotel = await hotelServices.UpdateHotelDto(Id, updatedHotel);
         return Ok( updatingHotel);
     }
-    [HttpDelete("{Id}")]
+    [HttpDelete("DeleteHotel{Id}")]
     public async Task<IActionResult> Delete(int Id)
     {
         await hotelServices.DeleteHotel(Id);

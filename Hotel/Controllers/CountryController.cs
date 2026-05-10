@@ -1,4 +1,5 @@
-﻿using Hotel.Contract;
+﻿using AutoMapper;
+using Hotel.Contract;
 using Hotel.Data;
 using Hotel.DTOs.Country;
 using Hotel.DTOs.Hotel;
@@ -9,28 +10,28 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hotel.Controllers;
 
-[Route("api/[controller]")]
+[Route("api/country")]
 [ApiController]
 public class CountryController(ICountryInterface countryServices) : ControllerBase
 {
     // GET: api/<CountryController>
-    [HttpGet]
+    [HttpGet("GetCountries")]
     public async Task<IActionResult> GetCountries()
     {
-        var gethotels =await countryServices.GetCountries();
-        return Ok(gethotels);
+        var getcountries =await countryServices.GetCountries();
+        return Ok(getcountries);
     }
 
     // GET api/<CountryController>/5
-    [HttpGet("{id}")]
+    [HttpGet("GetCountry{id}")]
     public async Task<IActionResult> GetCountry(int id)
     {
-        var gethotel = await countryServices.GetCountry(id);
-        return Ok(gethotel);
+        var getcountry = await countryServices.GetCountry(id);
+        return Ok(getcountry);
     }
 
     // POST api/<CountryController>
-    [HttpPost]
+    [HttpPost("CreateCountry")]
     public async Task<IActionResult> CreateCountry([FromBody] CreateCountryDTO newCountry)
     {
         var createCountry = await countryServices.CreateCountry(newCountry);
@@ -38,7 +39,7 @@ public class CountryController(ICountryInterface countryServices) : ControllerBa
     }
 
     // PUT api/<CountryController>/5
-    [HttpPut("{id}")]
+    [HttpPut("UpdateCountry{id}")]
     public async Task<IActionResult> UpdateCountry(int id, [FromBody] UpdateCountryDTO updatingHotel)
     {
         var update = await countryServices.UpdateCountry(id,updatingHotel);
@@ -46,7 +47,7 @@ public class CountryController(ICountryInterface countryServices) : ControllerBa
     }
 
     // DELETE api/<CountryController>/5
-    [HttpDelete("{id}")]
+    [HttpDelete("DeleteCountry{id}")]
     public async Task<IActionResult> DeleteCountry(int id)
     {
         await countryServices.DeleteCountry(id);

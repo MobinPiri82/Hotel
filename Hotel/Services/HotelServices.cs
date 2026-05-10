@@ -1,4 +1,6 @@
-﻿using Hotel.Contract;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Hotel.Contract;
 using Hotel.Data;
 using Hotel.DTOs.Hotel;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -7,30 +9,22 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hotel.Services;
 
-public class HotelServices(Context context) : IHotelServices
+public class HotelServices(Context context,IMapper mapper) : IHotelServices
 
 {
     public async Task<IEnumerable<GetHotelsDto>> GetHotelsDto()
     {
-        var hotels = await context.hotels
-            .Select(h => new GetHotelsDto(
-            h.id,
-            h.Name,
-            h.Address,
-            h.Rate,
-            h.CountryId)).ToListAsync();
+        var hotels = await context.hotels.
+            ProjectTo<GetHotelsDto>(mapper.ConfigurationProvider)
+           .ToListAsync();
         return (hotels);
     }
     public async Task<GetHotelDTO> GetHotelDTO(int id)
     {
-        var Selectedhotel = context.hotels.
-        Include(q => q.country).
-        Select(h => new GetHotelDTO(
-            h.id,
-            h.Name,
-            h.Address,
-            h.Rate,
-            h.country!.Shortname)).FirstOrDefaultAsync(a => a.id == id);
+        var Selectedhotel = context.hotels
+        .Where(a => a.id == id)
+        .Include(q => q.country).ProjectTo<GetHotelDTO>(mapper.ConfigurationProvider)
+        .FirstOrDefaultAsync(a => a.id == id);
         return await Selectedhotel;
         if (Selectedhotel == null)
         {
@@ -43,24 +37,10 @@ public class HotelServices(Context context) : IHotelServices
         var Exist = await context.hotels.AnyAsync(a => a.Name == newHotel.Name);
         if (!Exist)
         {
-            var hotel = new HotelInfo
-            {
-                Name = newHotel.Name,
-                Address = newHotel.Address,
-                Rate = newHotel.Rate,
-                CountryId = newHotel.CountryId
-
-            };
+            var hotel = mapper.Map<HotelInfo>(newHotel);
             context.hotels.Add(hotel);
             await context.SaveChangesAsync();
-            var hotelDto = new GetHotelsDto(
-        hotel.id,
-        hotel.Name,
-        hotel.Address,
-        hotel.Rate,
-        hotel.CountryId
-    );
-            return hotelDto;
+            var returnObj = mapper.Map<GetHotelDTO>(hotel);
             //return CreatedAtAction(nameof(Get), new { id = hotel.id }, hotel);
         }
         //return BadRequest("Hotel already exist");
@@ -73,15 +53,12 @@ public class HotelServices(Context context) : IHotelServices
         {
             return null;
         }
-        update.Name = updatedHotel.Name;
-        update.Address = updatedHotel.Address;
-        update.Rate = updatedHotel.Rate;
-        update.CountryId = updatedHotel.CountryId;
+       mapper.Map(updatedHotel,update);
+       context.Entry(updatedHotel).State = EntityState.Modified;
 
         try
         {
             await context.SaveChangesAsync();
-            context.Entry(updatedHotel).State = EntityState.Modified;
         }
         catch (DbUpdateConcurrencyException)
         {
