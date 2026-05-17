@@ -6,7 +6,7 @@ using Hotel.DTOs.Country;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using System.Collections;
-
+using Hotel.Result;
 
 
 namespace Hotel.Services;
@@ -15,19 +15,20 @@ namespace Hotel.Services;
 
 public class CountryServices(Context context, IMapper mapper) : ICountryInterface
 {
-    public async Task<IEnumerable<GetCountriesDTO>> GetCountries()
+    public async Task<Result<IEnumerable<GetCountriesDTO>>> GetCountries()
     {
         var countries = await context.countries.ProjectTo<GetCountriesDTO>(mapper.ConfigurationProvider).ToListAsync();
-        return countries;
+        //return countries;
+        return Result<IEnumerable<GetCountriesDTO>>.Success(countries);
     }
-    public async Task<GetCountryDTO> GetCountry(int id)
+    public async Task<Result<GetCountryDTO>> GetCountry(int id)
     {
         var country = await context.countries.Where(c => c.CountryId == id).Include(a=>a.Hotels).
              ProjectTo<GetCountryDTO>(mapper.ConfigurationProvider).
              SingleOrDefaultAsync();
         if (country == null)
             throw new KeyNotFoundException("");
-        return country;
+        return country is null ? Result<GetCountryDTO>.NotFound() : Result<GetCountryDTO>.Success(country);
     }
     
     public async Task<GetCountryDTO> CreateCountry(CreateCountryDTO newCountry)

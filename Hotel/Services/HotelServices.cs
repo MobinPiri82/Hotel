@@ -3,6 +3,7 @@ using AutoMapper.QueryableExtensions;
 using Hotel.Contract;
 using Hotel.Data;
 using Hotel.DTOs.Hotel;
+using Hotel.Result;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,46 +13,43 @@ namespace Hotel.Services;
 public class HotelServices(Context context,IMapper mapper) : IHotelServices
 
 {
-    public async Task<IEnumerable<GetHotelsDto>> GetHotelsDto()
+    public async Task<Result<IEnumerable<GetHotelsDto>>> GetHotelsDto()
     {
         var hotels = await context.hotels.
             ProjectTo<GetHotelsDto>(mapper.ConfigurationProvider)
            .ToListAsync();
-        return (hotels);
+        return  Result<IEnumerable<GetHotelsDto>>.Success(hotels)  ;
     }
-    public async Task<GetHotelDTO> GetHotelDTO(int id)
+    public async Task<Result<GetHotelDTO>> GetHotelDTO(int id)
     {
-        var Selectedhotel = context.hotels
+        var Selectedhotel = await context.hotels
         .Where(a => a.id == id)
         .Include(q => q.country).ProjectTo<GetHotelDTO>(mapper.ConfigurationProvider)
         .FirstOrDefaultAsync(a => a.id == id);
-        return await Selectedhotel;
-        if (Selectedhotel == null)
-        {
-            throw new Exception("Not Found");
-        }
-        
+        return Selectedhotel is null ? 
+            Result<GetHotelDTO>.NotFound() :
+            Result<GetHotelDTO>.Success(Selectedhotel);
+           
     }
-    public async Task<GetHotelsDto?> CreateHotelDto(CreateHotelDTO newHotel)
+    public async Task<Result<GetHotelDTO?>> CreateHotelDto(CreateHotelDTO newHotel)
     {
         var Exist = await context.hotels.AnyAsync(a => a.Name == newHotel.Name);
         if (!Exist)
         {
             var hotel = mapper.Map<HotelInfo>(newHotel);
-            context.hotels.Add(hotel);
+            await context.hotels.AddAsync(hotel);
             await context.SaveChangesAsync();
             var returnObj = mapper.Map<GetHotelDTO>(hotel);
-            //return CreatedAtAction(nameof(Get), new { id = hotel.id }, hotel);
+            return Result<GetHotelDTO?>.Success(returnObj);
         }
-        //return BadRequest("Hotel already exist");
-        return null;
+        return Result<GetHotelDTO?>.Failuar();
     }
-    public async Task<UpdateHotelDTO?> UpdateHotelDto(int Id, UpdateHotelDTO updatedHotel)
+    public async Task<Result<UpdateHotelDTO?>> UpdateHotelDto(int Id, UpdateHotelDTO updatedHotel)
     {
         var update = await context.hotels.FirstOrDefaultAsync(h => h.id == Id);
         if (update == null)
         {
-            return null;
+            return Result<UpdateHotelDTO?>.NotFound();
         }
        mapper.Map(updatedHotel,update);
        context.Entry(updatedHotel).State = EntityState.Modified;
@@ -63,10 +61,10 @@ public class HotelServices(Context context,IMapper mapper) : IHotelServices
         catch (DbUpdateConcurrencyException)
         {
             if (!await hotelExistAsync(Id))
-                return null;
+                return Result<UpdateHotelDTO?>.Failuar();
             else throw;
         }
-        return updatedHotel;
+        return Result<UpdateHotelDTO?>.Success(updatedHotel);
 
     }
     public async Task DeleteHotel(int id)

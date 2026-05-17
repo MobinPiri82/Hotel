@@ -19,5 +19,6 @@ public class CountryEntityConfigurations : IEntityTypeConfiguration<Counrty>
         builder.Property(a => a.CountryId).
             ValueGeneratedOnAdd().
             UseIdentityColumn();
+        
     }
 }
